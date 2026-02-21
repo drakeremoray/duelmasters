@@ -1,0 +1,22 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/packages
+/*/bin
+/*/obj
+*.user
+/LibraryApi/App
+/LibraryApi/POSApp
+/LibraryApi/Store/Ticker
+/LibraryApi/Logs
+/LibraryApi/connections.config
+/LibraryWeb/.vscode
+/LibraryApi/Store
+/LibraryApi/LibraryApp
+/LibraryApi/appsettings.config
+/LibraryApi/Images/*/
+/Messaging/node_modules
+/Messaging/dist
+/LibraryApi/.vs
