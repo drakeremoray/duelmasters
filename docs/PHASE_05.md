@@ -40,6 +40,41 @@ Remaining Phase 5 work:
 - Integrate structured logging and metrics for observability.
 - Add CI job to run unit tests and basic linting.
 
+Additional notes:
+
+- Frontend enforcement: The client must also validate legal actions before sending them to the API. While the server is authoritative and will reject illegal actions, we implemented deterministic rule checks server-side for correctness and auditing. To prevent poor UX (and reduce spurious network traffic), the frontend should mirror the game's rule checks (available actions, mana/resources, valid targets, timing windows) and only offer legal options to the player.
+
+- What 'richer rules' we implemented: cost/resource enforcement for `playCard`, card-in-hand validation, and attack legality checks (attacker on battlefield, target present). These are basic deterministic checks; full effect resolution, damage, and triggered abilities are next.
+
+- New available card-manipulation actions (server-side handlers added):
+	- `draw` — draw from player's deck to hand (already implemented).
+	- `discard` / `discard_specific` — discard a specified card from a zone (`hand` or `battlefield`) belonging to a player.
+	- `discard_random` — deterministically discard the first card from the specified zone (placeholder for a seeded RNG later).
+	- `flip` / `flip_card` — toggle `faceDown` on a specific card.
+	- `highlight` / `target` — mark a card as targeted/highlighted by a player (adds `targetedBy` on card JSON).
+
+These actions allow clients to implement UI interactions such as selecting a target (highlight), requesting opponent responses (target), and performing manipulations like discard or flip. The server validates targets exist and enforces basic legality (e.g., card-in-hand for `playCard`).
+
+Phase 5 Status
+---------------
+
+Phase 5 is largely implemented: the deterministic `MatchEngine` and supporting APIs exist, socket forwarding is wired, and a basic unit test harness is present. Important remaining work prevents calling Phase 5 fully complete:
+
+- Add CI to run unit tests and enforce linting/build checks (`Phase 5.9`).
+- Expand unit test coverage for `playCard`, `discard`, `flip`, `attack`, and edge cases.
+- Implement deterministic resolution for card effects, damage, and triggered abilities (full rule resolution).
+- Harden authorization and match lifecycle (only match participants can act; join/leave flows, match ownership).
+- Add snapshot/replay tooling and observability (structured logs, metrics).
+
+Because CI and additional tests are still pending, I recommend we complete those before marking Phase 5 as fully finished. If you prefer, we can start Phase 6 in parallel, but it carries the risk of building on incomplete test/CI coverage.
+
+Next steps (suggested):
+
+1. Add CI pipeline to run `dotnet test` and the JS lint/tests for the socket server.
+2. Expand unit tests to cover new actions and edge cases.
+3. Stabilize deterministic effect resolution for core card interactions.
+4. Once CI passes and tests cover core flows, mark Phase 5 complete and begin Phase 6.
+
 <!-- File: PHASE_05.md -->
 
 # Phase 5: Game Logic & Rules Engine

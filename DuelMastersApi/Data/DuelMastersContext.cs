@@ -13,6 +13,9 @@ namespace DuelMastersApi.Data
         public DbSet<DeckCard> DeckCards => Set<DeckCard>();
         public DbSet<Match> Matches => Set<Match>();
         public DbSet<GameState> GameStates => Set<GameState>();
+        public DbSet<MatchAction> MatchActions => Set<MatchAction>();
+        public DbSet<MatchmakingEntry> MatchmakingQueue => Set<MatchmakingEntry>();
+        public DbSet<MatchParticipant> MatchParticipants => Set<MatchParticipant>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,6 +23,10 @@ namespace DuelMastersApi.Data
             modelBuilder.Entity<Player>().HasIndex(p => p.Username).IsUnique();
             modelBuilder.Entity<GameState>().Property(g => g.State).HasColumnType("jsonb");
             modelBuilder.Entity<DeckCard>().Property(dc => dc.Quantity).HasDefaultValue(1);
+            modelBuilder.Entity<MatchAction>().Property(a => a.Payload).HasColumnType("jsonb");
+            modelBuilder.Entity<MatchmakingEntry>().HasIndex(m => m.CreatedAt);
+            modelBuilder.Entity<MatchmakingEntry>().HasIndex(m => m.PlayerId);
+            modelBuilder.Entity<MatchParticipant>().HasIndex(p => new { p.MatchId, p.PlayerId });
         }
     }
 }

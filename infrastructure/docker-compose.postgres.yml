@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: duelmasters-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: duelmaster
+      POSTGRES_PASSWORD: duelmaster_pwd
+      POSTGRES_DB: duelmasters
+    ports:
+      - "5432:5432"
+    volumes:
+      - dm_pgdata:/var/lib/postgresql/data
+
+volumes:
+  dm_pgdata:
+    name: duelmasters_pgdata

@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Restore & Build API
+        run: |
+          dotnet restore DuelMastersApi
+          dotnet build DuelMastersApi --configuration Release
+
+      - name: Run .NET tests
+        run: dotnet test DuelMastersApi.Tests --configuration Release --no-build
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Socket Server deps
+        run: |
+          cd DuelMastersSocket
+          npm ci
+
+      - name: Notes
+        run: |
+          echo "No JS tests configured; socket server dependencies installed."

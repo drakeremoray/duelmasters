@@ -43,6 +43,13 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddSingleton<ITokenService, TokenService>();
 
+// match action logging
+builder.Services.AddScoped<IMatchActionService, MatchActionService>();
+
+// matchmaking and background compaction
+builder.Services.AddScoped<IMatchmakingService, MatchmakingService>();
+builder.Services.AddHostedService<SnapshotCompactionService>();
+
 // Register service layer
 builder.Services.AddScoped<IPlayerService, PlayerService>();
 builder.Services.AddScoped<ICardService, CardService>();

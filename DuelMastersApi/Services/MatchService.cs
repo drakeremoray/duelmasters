@@ -11,11 +11,13 @@ namespace DuelMastersApi.Services
     {
         private readonly DuelMastersContext _db;
         private readonly IGameStateService _gameState;
+        private readonly IMatchActionService _actionService;
 
-        public MatchService(DuelMastersContext db, IGameStateService gameState)
+        public MatchService(DuelMastersContext db, IGameStateService gameState, IMatchActionService actionService)
         {
             _db = db;
             _gameState = gameState;
+            _actionService = actionService;
         }
 
         public async Task<List<Match>> GetAllAsync() => await _db.Matches.ToListAsync();
@@ -47,6 +49,16 @@ namespace DuelMastersApi.Services
         {
             var latest = await _gameState.GetLatestByMatchIdAsync(matchId);
             var currentState = latest?.State ?? "{}";
+
+            // persist action log for replay
+            var actionLog = new DuelMastersApi.Data.Models.MatchAction
+            {
+                MatchId = matchId,
+                PlayerId = playerId,
+                ActionType = action.ActionType,
+                Payload = System.Text.Json.JsonSerializer.Serialize(action.Payload)
+            };
+            await _actionService.CreateAsync(actionLog);
 
             var result = MatchEngine.ApplyAction(currentState, action, playerId);
 

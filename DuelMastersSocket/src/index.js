@@ -50,14 +50,48 @@ io.on('connection', (socket) => {
 
     socket.on('joinMatch', ({ matchId }) => {
         const room = `match:${matchId}`;
-        socket.join(room);
-        io.to(room).emit('playerJoined', { playerId: user.sub, socketId: socket.id });
+        // call API to register participant and then join room
+        (async () => {
+            try {
+                const res = await fetch(`${API_URL}/api/matches/${matchId}/join`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${socket.authToken}` }
+                });
+                if (res.ok) {
+                    const body = await res.json();
+                    socket.join(room);
+                    io.to(room).emit('playerJoined', { playerId: socket.userId, socketId: socket.id });
+                    socket.emit('joinAck', { status: 'joined', participant: body });
+                } else {
+                    const txt = await res.text();
+                    socket.emit('joinAck', { status: 'error', detail: txt });
+                }
+            } catch (err) {
+                socket.emit('joinAck', { status: 'error', detail: String(err) });
+            }
+        })();
     });
 
     socket.on('leaveMatch', ({ matchId }) => {
-        const room = `match:${matchId}`;
-        socket.leave(room);
-        io.to(room).emit('playerLeft', { playerId: user.sub, socketId: socket.id });
+        (async () => {
+            const room = `match:${matchId}`;
+            try {
+                const res = await fetch(`${API_URL}/api/matches/${matchId}/leave`, {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${socket.authToken}` }
+                });
+                if (res.ok) {
+                    socket.leave(room);
+                    io.to(room).emit('playerLeft', { playerId: socket.userId, socketId: socket.id });
+                    socket.emit('leaveAck', { status: 'left' });
+                } else {
+                    const txt = await res.text();
+                    socket.emit('leaveAck', { status: 'error', detail: txt });
+                }
+            } catch (err) {
+                socket.emit('leaveAck', { status: 'error', detail: String(err) });
+            }
+        })();
     });
 
     socket.on('matchEvent', async ({ matchId, event }) => {
