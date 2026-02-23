@@ -1,0 +1,9 @@
+nav {
+    margin-bottom: 12px;
+}
+
+nav a {
+    color: var(--accent);
+    text-decoration: none;
+    margin-right: 8px
+}

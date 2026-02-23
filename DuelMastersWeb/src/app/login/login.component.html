@@ -1,0 +1,9 @@
+<div class="card">
+    <h2>Login</h2>
+    <form (submit)="onLogin($event)">
+        <label>Username: <input [(ngModel)]="username" name="username" /></label>
+        <label>Password: <input type="password" [(ngModel)]="password" name="password" /></label>
+        <button type="submit">Login</button>
+    </form>
+    <p class="muted" *ngIf="message">{{message}}</p>
+</div>

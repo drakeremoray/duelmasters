@@ -1,0 +1,14 @@
+.card {
+    max-width: 420px
+}
+
+label {
+    display: block;
+    margin: 8px 0
+}
+
+input {
+    padding: 6px;
+    width: 100%;
+    box-sizing: border-box
+}

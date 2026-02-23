@@ -1,0 +1,7 @@
+.card {
+    max-width: 480px
+}
+
+.muted {
+    color: var(--muted)
+}

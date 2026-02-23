@@ -1,0 +1,7 @@
+<div class="card">
+    <h2>Match {{matchId}}</h2>
+    <div *ngIf="joined">Joined room. Send a draw action:</div>
+    <button (click)="join()">Join Match</button>
+    <button (click)="sendDraw()" [disabled]="!joined">Draw</button>
+    <pre>{{log}}</pre>
+</div>
