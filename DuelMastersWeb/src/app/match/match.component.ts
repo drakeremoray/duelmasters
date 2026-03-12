@@ -2,11 +2,15 @@ import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { io } from 'socket.io-client';
 import { AuthService } from '../auth.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-match',
     templateUrl: './match.component.html',
-    styleUrls: ['./match.component.css']
+    styleUrls: ['./match.component.css'],
+    standalone: true,
+    imports: [FormsModule, CommonModule]
 })
 export class MatchComponent {
     matchId = '';

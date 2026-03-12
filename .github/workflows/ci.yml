@@ -35,6 +35,11 @@ jobs:
           cd DuelMastersSocket
           npm ci
 
+      - name: Lint Socket Server
+        run: |
+          cd DuelMastersSocket
+          npm run lint
+
       - name: Notes
         run: |
-          echo "No JS tests configured; socket server dependencies installed."
+          echo "JS linting added; no JS tests configured."

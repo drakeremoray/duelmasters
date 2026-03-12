@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth.service';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
     selector: 'app-lobby',
     templateUrl: './lobby.component.html',
-    styleUrls: ['./lobby.component.css']
+    styleUrls: ['./lobby.component.css'],
+    standalone: true,
+    imports: [FormsModule, CommonModule]
 })
 export class LobbyComponent {
     status = '';

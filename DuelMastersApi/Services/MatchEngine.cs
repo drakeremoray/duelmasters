@@ -18,6 +18,15 @@ namespace DuelMastersApi.Services
             if (stateNode["activePlayer"] == null) stateNode["activePlayer"] = playerId;
             if (stateNode["events"] == null) stateNode["events"] = new JsonArray();
 
+            // Ensure players have life
+            if (stateNode["players"] is JsonArray playersArray)
+            {
+                foreach (var p in playersArray)
+                {
+                    if (p != null && p["life"] == null) p["life"] = 20;
+                }
+            }
+
             var events = new List<MatchEventDto>();
 
             switch ((action?.ActionType ?? "").ToLowerInvariant())
@@ -29,12 +38,12 @@ namespace DuelMastersApi.Services
                     stateNode["turn"] = turn + 1;
 
                     // simple rotation: if players array exists, pick next index
-                    if (stateNode["players"] is JsonArray playersArr && playersArr.Count > 0)
+                    if (stateNode["players"] is JsonArray playersArrTurn && playersArrTurn.Count > 0)
                     {
                         var active = stateNode["activePlayer"]!.GetValue<int>();
-                        int idx = playersArr.ToList().FindIndex(n => n!.GetValue<int>() == active);
-                        int nextIdx = (idx + 1) % playersArr.Count;
-                        stateNode["activePlayer"] = playersArr[nextIdx]!.GetValue<int>();
+                        int idx = playersArrTurn.ToList().FindIndex(n => n!.GetValue<int>() == active);
+                        int nextIdx = (idx + 1) % playersArrTurn.Count;
+                        stateNode["activePlayer"] = playersArrTurn[nextIdx]!.GetValue<int>();
                     }
 
                     events.Add(new MatchEventDto { Type = "TurnEnded", Data = new { by = playerId } });
@@ -166,6 +175,14 @@ namespace DuelMastersApi.Services
                             playerNode["hand"] = hand;
                             playerNode["battlefield"] = battlefield;
 
+                            // If creature, set power and toughness
+                            var cardType = cardNode["cardType"]?.ToString();
+                            if (cardType == "Creature")
+                            {
+                                if (cardNode["power"] == null) cardNode["power"] = cost;
+                                if (cardNode["toughness"] == null) cardNode["toughness"] = cost + 2;
+                            }
+
                             events.Add(new MatchEventDto { Type = "CardPlayed", Data = new { player = playerId, card = cardNode, cost = cost } });
                         }
                     }
@@ -193,10 +210,10 @@ namespace DuelMastersApi.Services
                         var targetExists = false;
                         JsonNode? attackerNode = null;
 
-                        if (stateNode["players"] is JsonArray playersArr2)
+                        if (stateNode["players"] is JsonArray playersArrAttack)
                         {
                             // check attacker on player's battlefield
-                            var playerNode = playersArr2.ToList().FirstOrDefault(n => n != null && n["id"] != null && n["id"]!.GetValue<int>() == playerId);
+                            var playerNode = playersArrAttack.ToList().FirstOrDefault(n => n != null && n["id"] != null && n["id"]!.GetValue<int>() == playerId);
                             if (playerNode != null)
                             {
                                 var battlefield = playerNode["battlefield"] as JsonArray ?? new JsonArray();
@@ -210,7 +227,7 @@ namespace DuelMastersApi.Services
                             }
 
                             // check target on any player's battlefield or a player id (direct)
-                            foreach (var p in playersArr2)
+                            foreach (var p in playersArrAttack)
                             {
                                 var bf = p?["battlefield"] as JsonArray;
                                 if (bf != null)
@@ -229,7 +246,7 @@ namespace DuelMastersApi.Services
                             // allow direct attack if targetId equals some player id
                             if (!targetExists)
                             {
-                                foreach (var p in playersArr2)
+                                foreach (var p in playersArrAttack)
                                 {
                                     if (p?["id"] != null && p["id"]!.GetValue<int>() == targetId) { targetExists = true; break; }
                                 }
@@ -239,8 +256,77 @@ namespace DuelMastersApi.Services
                         if (!attackerExists) { events.Add(new MatchEventDto { Type = "AttackFailed", Data = new { reason = "attacker-not-found" } }); break; }
                         if (!targetExists) { events.Add(new MatchEventDto { Type = "AttackFailed", Data = new { reason = "target-not-found" } }); break; }
 
-                        // Simplified resolution: emit AttackResolved; damage/resolution handled later
-                        events.Add(new MatchEventDto { Type = "AttackResolved", Data = new { player = playerId, attacker = attackerId, target = targetId } });
+                        // Get attacker's power
+                        var power = attackerNode!["power"]?.GetValue<int>() ?? 1;
+
+                        // Apply damage
+                        var damageDealt = false;
+                        if (stateNode["players"] is JsonArray playersArrDamage)
+                        {
+                            // Check if target is a card
+                            JsonNode? targetCard = null;
+                            JsonNode? targetPlayer = null;
+                            foreach (var p in playersArrDamage)
+                            {
+                                var bf = p?["battlefield"] as JsonArray;
+                                if (bf != null)
+                                {
+                                    foreach (var c in bf)
+                                    {
+                                        if (c != null && c["id"] != null && c["id"]!.GetValue<int>() == targetId)
+                                        {
+                                            targetCard = c;
+                                            targetPlayer = p;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (targetCard != null) break;
+                            }
+
+                            if (targetCard != null)
+                            {
+                                // Damage creature
+                                var toughness = targetCard["toughness"]?.GetValue<int>() ?? 1;
+                                toughness -= power;
+                                targetCard["toughness"] = toughness;
+                                events.Add(new MatchEventDto { Type = "DamageDealt", Data = new { attacker = attackerId, target = targetId, damage = power, remainingToughness = toughness } });
+
+                                if (toughness <= 0)
+                                {
+                                    // Destroy: move to graveyard
+                                    var bf = targetPlayer!["battlefield"] as JsonArray ?? new JsonArray();
+                                    bf.Remove(targetCard);
+                                    var graveyard = targetPlayer["graveyard"] as JsonArray ?? new JsonArray();
+                                    graveyard.Add(targetCard);
+                                    targetPlayer["graveyard"] = graveyard;
+                                    events.Add(new MatchEventDto { Type = "CreatureDestroyed", Data = new { card = targetId } });
+                                }
+                                damageDealt = true;
+                            }
+                            else
+                            {
+                                // Target is player
+                                var targetP = playersArrDamage.ToList().FirstOrDefault(p => p != null && p["id"] != null && p["id"]!.GetValue<int>() == targetId);
+                                if (targetP != null)
+                                {
+                                    var life = targetP["life"]?.GetValue<int>() ?? 20;
+                                    life -= power;
+                                    targetP["life"] = life;
+                                    events.Add(new MatchEventDto { Type = "DamageDealt", Data = new { attacker = attackerId, target = targetId, damage = power, remainingLife = life } });
+                                    damageDealt = true;
+                                }
+                            }
+                        }
+
+                        if (damageDealt)
+                        {
+                            events.Add(new MatchEventDto { Type = "AttackResolved", Data = new { player = playerId, attacker = attackerId, target = targetId, damage = power } });
+                        }
+                        else
+                        {
+                            events.Add(new MatchEventDto { Type = "AttackFailed", Data = new { reason = "damage-application-failed" } });
+                        }
                     }
                     catch
                     {

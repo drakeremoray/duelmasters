@@ -1,0 +1,10 @@
+{
+    "name": "duelmasters-web",
+    "integrations": {
+        "capacitor": {}
+    },
+    "type": "angular",
+    "cli": {
+        "defaultCollection": "@ionic/angular-toolkit"
+    }
+}

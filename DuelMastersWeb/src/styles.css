@@ -1,0 +1,108 @@
+@import "~@ionic/angular/css/normalize.css";
+@import "~@ionic/angular/css/structure.css";
+@import "~@ionic/angular/css/typography.css";
+@import "~@ionic/angular/css/core.css";
+@import "~@ionic/angular/css/padding.css";
+@import "~@ionic/angular/css/float-elements.css";
+@import "~@ionic/angular/css/text-alignment.css";
+@import "~@ionic/angular/css/text-transformation.css";
+@import "~@ionic/angular/css/flex-utils.css";
+@import "~@ionic/angular/css/display.css";
+
+:root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --accent: #2b8cf6;
+    --muted: #666;
+}
+
+body {
+    font-family: Inter, Arial, sans-serif;
+    padding: 16px;
+    background: var(--bg);
+    color: #111;
+}
+
+ion-app {
+    display: block;
+}
+
+ion-card {
+    margin: 16px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--card);
+}
+
+ion-card-header {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+}
+
+ion-card-title {
+    font-size: 18px;
+    font-weight: bold;
+    display: block;
+}
+
+ion-card-content {
+    padding: 16px;
+}
+
+ion-button {
+    margin-top: 12px;
+    display: block;
+    width: 100%;
+}
+
+ion-item {
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+ion-label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+ion-input {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border: none;
+}
+
+nav a {
+    margin-right: 8px;
+    color: var(--accent);
+    text-decoration: none
+}
+
+nav a:hover {
+    text-decoration: underline
+}
+
+button {
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: var(--card);
+    cursor: pointer
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed
+}
+
+.card {
+    background: var(--card);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    margin: 8px 0
+}

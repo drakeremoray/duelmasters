@@ -115,5 +115,34 @@ namespace DuelMastersApi.Tests
             Assert.NotNull(targeted);
             Assert.Contains(7, targeted!.Select(n => n!.GetValue<int>()));
         }
+
+        [Fact]
+        public void Attack_Succeeds_When_AttackerOnBattlefieldAndTargetExists()
+        {
+            var attacker = new JsonObject { ["id"] = 50 };
+            var targetCard = new JsonObject { ["id"] = 51 };
+            var player1 = new JsonObject { ["id"] = 8, ["battlefield"] = new JsonArray(attacker) };
+            var player2 = new JsonObject { ["id"] = 9, ["battlefield"] = new JsonArray(targetCard) };
+            var state = new JsonObject { ["players"] = new JsonArray(player1, player2), ["events"] = new JsonArray() };
+
+            var action = new MatchActionDto { ActionType = "attack", Payload = new { attacker = 50, target = 51 } };
+            var result = MatchEngine.ApplyAction(state.ToJsonString(), action, 8);
+
+            Assert.Contains(result.Events, e => e.Type == "AttackResolved");
+        }
+
+        [Fact]
+        public void Attack_Fails_When_AttackerNotOnBattlefield()
+        {
+            var targetCard = new JsonObject { ["id"] = 52 };
+            var player1 = new JsonObject { ["id"] = 10, ["battlefield"] = new JsonArray() };
+            var player2 = new JsonObject { ["id"] = 11, ["battlefield"] = new JsonArray(targetCard) };
+            var state = new JsonObject { ["players"] = new JsonArray(player1, player2), ["events"] = new JsonArray() };
+
+            var action = new MatchActionDto { ActionType = "attack", Payload = new { attacker = 53, target = 52 } };
+            var result = MatchEngine.ApplyAction(state.ToJsonString(), action, 10);
+
+            Assert.Contains(result.Events, e => e.Type == "AttackFailed");
+        }
     }
 }

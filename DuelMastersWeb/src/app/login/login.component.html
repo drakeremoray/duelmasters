@@ -1,9 +1,19 @@
-<div class="card">
-    <h2>Login</h2>
-    <form (submit)="onLogin($event)">
-        <label>Username: <input [(ngModel)]="username" name="username" /></label>
-        <label>Password: <input type="password" [(ngModel)]="password" name="password" /></label>
-        <button type="submit">Login</button>
-    </form>
-    <p class="muted" *ngIf="message">{{message}}</p>
-</div>
+<ion-card>
+    <ion-card-header>
+        <ion-card-title>Login</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+        <form (submit)="onLogin($event)">
+            <ion-item>
+                <ion-label position="stacked">Username</ion-label>
+                <ion-input [(ngModel)]="username" name="username"></ion-input>
+            </ion-item>
+            <ion-item>
+                <ion-label position="stacked">Password</ion-label>
+                <ion-input type="password" [(ngModel)]="password" name="password"></ion-input>
+            </ion-item>
+            <ion-button type="submit" expand="block">Login</ion-button>
+        </form>
+        <p *ngIf="message">{{message}}</p>
+    </ion-card-content>
+</ion-card>

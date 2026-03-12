@@ -1,7 +1,11 @@
-<div class="card">
-    <h2>Match {{matchId}}</h2>
-    <div *ngIf="joined">Joined room. Send a draw action:</div>
-    <button (click)="join()">Join Match</button>
-    <button (click)="sendDraw()" [disabled]="!joined">Draw</button>
-    <pre>{{log}}</pre>
-</div>
+<ion-card>
+    <ion-card-header>
+        <ion-card-title>Match {{matchId}}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+        <p *ngIf="joined">Joined room. Send a draw action:</p>
+        <ion-button (click)="join()" expand="block">Join Match</ion-button>
+        <ion-button (click)="sendDraw()" [disabled]="!joined" expand="block">Draw</ion-button>
+        <pre>{{log}}</pre>
+    </ion-card-content>
+</ion-card>
